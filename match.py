@@ -2,8 +2,12 @@ import cv2
 import pafy
 import numpy as np
 
+proj_size = 1024
+cv2.namedWindow("show1")
+cv2.namedWindow("show2")
 cam = cv2.VideoCapture(0)
-cv2.namedWindow("test")
+cam_w, cam_h = 320, 240
+
 url = 'https://youtu.be/0usXEzuKdkU'
 vPafy = pafy.new(url)
 play = vPafy.getbest(preftype="webm")
@@ -40,17 +44,17 @@ while True:
         dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
         centroid = (dst_pts.sum(0) / len(dst_pts)).squeeze().astype('int')
         frame = cv2.circle(frame, tuple(centroid), 10, (255, 255, 255), -1)
-        offset = np.array([320, 240]) - centroid
-        curr_centroid = np.array([512, 512]) - offset
+        offset = np.array([cam_w//2, cam_h//2]) - centroid
+        curr_centroid = np.array([proj_size//2, proj_size//2]) - offset
         if np.sum(np.abs(curr_centroid - proj_centroid)) >= 50:
             proj_centroid = curr_centroid
-            x1, y1 = proj_centroid - 256
-            x2, y2 = proj_centroid + 256
-        projector = np.zeros((1024, 1024, 3), dtype=np.uint8)
+            x1, y1 = proj_centroid - proj_size//4
+            x2, y2 = proj_centroid + proj_size//4
+        projector = np.zeros((proj_size, proj_size, 3), dtype=np.uint8)
         _, video_fr = cap.read()
-        video_fr = cv2.resize(video_fr, (512, 512))
+        video_fr = cv2.resize(video_fr, (proj_size//2, proj_size//2))
         projector[int(y1):int(y2), int(x1):int(x2):] = video_fr
-        cv2.imshow('test', projector)
+        cv2.imshow('show1', projector)
         cv2.imshow('show2', frame)
         k = cv2.waitKey(20)
 
