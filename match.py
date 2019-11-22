@@ -77,12 +77,10 @@ while True:
         _, frame = cam.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         kp2, des2 = orb.detectAndCompute(frame, None)
-
         # Match descriptors.
         if des2 is not None:
             good_matches = bf.match(des1, des2)
             distance_sum = int(sum([m.distance for m in good_matches]))
-
             dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
             centroid = (dst_pts.sum(0) / len(dst_pts)).squeeze().astype('int')
             frame = cv2.circle(frame, tuple(centroid), 10, (255, 255, 255), -1)
@@ -92,7 +90,6 @@ while True:
                 proj_centroid = curr_centroid
                 x1, y1 = proj_centroid - proj_size // 8
                 x2, y2 = proj_centroid + proj_size // 8
-                print(distance_sum)
         projector = np.zeros((proj_size, proj_size, 3), dtype=np.uint8)
         _, video_fr = cap.read()
         video_fr = cv2.resize(video_fr, (proj_size // 4, proj_size // 4))
